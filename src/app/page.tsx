@@ -1,12 +1,41 @@
 'use client'
 import React, { useState } from 'react';
-import Image from 'next/image'
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const router = useRouter();
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
+  };
+
+  const handleLogin = async () => {
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Login successful:', data);
+        router.push('/wine_list');
+      } else {
+        const error = await response.json();
+        console.error('Login failed:', error);
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+    } finally {
+      toggleModal();
+    }
   };
 
   return (
@@ -64,16 +93,27 @@ export default function Home() {
           <div className="">
             {/* Modal content (e.g., email and password inputs) goes here */}
             <label className='text-white' >Email</label>
-            <input type="text" className="block w-full border p-2 mb-4" />
+            <input
+              type="email"
+              className="block w-full border p-2 mb-4"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
             <label className='text-white' >Password</label>
-            <input type="password" className="block w-full border p-7 mb-2 h-2 " />
+            <input
+              type="password"
+              className="block w-full border p-7 mb-2 h-2 "
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
 
             <button
               className='bg-blue-500 text-white font-bold py-2 px-4 rounded'
-              onClick={toggleModal}
+              type="button"
+              onClick={handleLogin}
             >
-              Close
+              Login
             </button>
           </div>
         </div>
