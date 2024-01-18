@@ -2,11 +2,10 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '../../generated/client';
 
 const prisma = new PrismaClient();
+const Cors = require('cors');
+const cors = Cors({ origin: true });
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -35,4 +34,11 @@ export default async function handler(
   } finally {
     await prisma.$disconnect();
   }
-}
+};
+
+// Apply the cors middleware to the handler function
+// const corsHandler = cors({
+//   origin: 'https://mywines.vercel.app',
+// })(handler);
+
+export default handler;

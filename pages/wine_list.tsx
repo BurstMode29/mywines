@@ -18,7 +18,7 @@ const WineList = () => {
   const [wines, setWines] = useState<Wine[]>([]);
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [isEditModalOpen, setEditModalOpen] = useState(false);
-  const [selectedWine, setSelectedWine] = useState(null);
+  const [selectedWine, setSelectedWine] = useState<Wine | null>(null);
   const [newWine, setNewWine] = useState({
     name: '',
     year: '',
@@ -37,8 +37,8 @@ const WineList = () => {
     setCreateModalOpen(false);
   };
 
-  const openEditModal = (wine: React.SetStateAction<null>) => {
-    setSelectedWine(wine);
+  const openEditModal = (index: number) => {
+    setSelectedWine(wines[index] || null);
     setEditModalOpen(true);
   };
 
@@ -66,20 +66,25 @@ const WineList = () => {
   };
 
   const handleEdit = async () => {
-    // Use API endpoint to edit the selected wine
+    if (!selectedWine) {
+      console.error('No wine selected for editing');
+      closeEditModal();
+      return;
+    }
+
     const response = await fetch(`/api/editWine?id=${selectedWine.id}`, {
       method: 'PUT',
     });
 
     if (response.ok) {
       const data = await response.json();
-      // Update the wines state with the edited wine
       setWines(wines.map((wine) => (wine.id === data.editedWine.id ? data.editedWine : wine)));
       closeEditModal();
     } else {
       console.error('Error editing wine:', response.statusText);
     }
   };
+
 
   useEffect(() => {
     const fetchWines = async () => {
@@ -95,7 +100,6 @@ const WineList = () => {
         console.error('Error during wine fetch:', error);
       }
     };
-
     fetchWines();
   }, []);
 
@@ -134,7 +138,6 @@ const WineList = () => {
           />
         </a>
       </div>
-
       <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
         <table className="min-w-full bg-#302E2E border border-white-300 text-white" >
           <thead>
@@ -160,7 +163,13 @@ const WineList = () => {
                 <td className="border border-gray-300 px-4 py-2">{wine.rating || 'N/A'}</td>
                 <td className="border border-gray-300 px-4 py-2">{wine.consumed || 'N/A'}</td>
                 <td className="border border-gray-300 px-4 py-2">{wine.dateConsumed || 'N/A'}</td>
-                {/* Add other wine fields here */}
+                <button
+                  className="bg-blue-500 text-white py-1 px-4 rounded"
+                  type='button'
+                  onClick={() => openEditModal(i)}
+                >
+                  Edit
+                </button>
               </tr>
             ))}
           </tbody>
